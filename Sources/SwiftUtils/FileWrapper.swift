@@ -246,7 +246,7 @@ open class FileWrapper {
     ///            preferred filename unless that name is already in use as a key in the directory’s
     ///            dictionary of children. See Accessing File Wrapper Identities in File System Programming
     ///            Guide for more information about the file-wrapper list structure.
-    public func addFileWrapper(_ child: FileWrapper) throws -> String {
+    public func addFileWrapper(_ child: FileWrapper) -> String {
         guard var wrappers = fileWrappers else {
             return ""
         }
