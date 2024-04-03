@@ -91,14 +91,7 @@ open class FileWrapper {
         }
     }
 
-    public var filename: String? {
-        get {
-            preferredFilename
-        }
-        set {
-            self.preferredFilename = newValue
-        }
-    }
+    public var filename: String?
 
     public var preferredFilename: String?
 
@@ -138,6 +131,7 @@ open class FileWrapper {
 
     public init(url: URL, options: FileWrapper.ReadingOptions = []) throws {
         self.preferredFilename = url.lastPathComponent
+        self.filename = url.lastPathComponent
         guard url.isFileURL else {
             self.fileWrappers = [:]
             return
