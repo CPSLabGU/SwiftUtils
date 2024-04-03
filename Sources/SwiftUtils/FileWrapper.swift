@@ -148,10 +148,31 @@ open class FileWrapper {
         return filename!
     }
 
+    /// Initializes the receiver as a regular-file file wrapper.
+    /// 
+    /// After initialization, the file wrapper is not associated with a file-system node until you save it
+    /// using ``write(to:options:originalContentsURL:)``. The receiver is initialized with open permissions:
+    /// anyone can read, write, or modify the directory on disk. If any file wrapper in the directory doesn’t
+    /// have a preferred filename, its preferred name is automatically set to its corresponding key in the
+    /// childrenByPreferredName dictionary.
+    /// 
+    /// After initialization, the file wrapper is not associated with a file-system node until you save it
+    /// using ``write(to:options:originalContentsURL:)``. The file wrapper is initialized with open
+    /// permissions: anyone can write to or read the file wrapper.
+    /// - Parameter regularFileWithContents: Contents of the file.
+    /// - Returns: Initialized regular-file file wrapper containing contents.
     public init(regularFileWithContents: Data) {
         self.regularFileContents = regularFileWithContents
     }
 
+    /// Initializes the receiver as a directory file wrapper, with a given file-wrapper list.
+    /// - Parameter directoryWithFileWrappers: Key-value dictionary of file wrappers with which to initialize
+    ///                                        the receiver. The dictionary must contain entries whose values
+    ///                                        are the file wrappers that are to become children and whose
+    ///                                        keys are filenames. See Accessing File Wrapper Identities in
+    ///                                        File System Programming Guide for more information about the
+    ///                                        file-wrapper list structure.
+    /// - Returns: Initialized file wrapper for fileWrappers.
     public init(directoryWithFileWrappers: [String: FileWrapper]) {
         self.fileWrappers = directoryWithFileWrappers
     }
@@ -172,10 +193,8 @@ open class FileWrapper {
         self.preferredFilename = url.lastPathComponent
         self.filename = url.lastPathComponent
         guard url.isFileURL else {
-            throw NSError(
-                domain: NSCocoaErrorDomain,
-                code: CocoaError.fileReadUnsupportedScheme.rawValue,
-                userInfo: ["NSURL": url.path]
+            throw CocoaError.error(
+                .fileReadUnsupportedScheme, userInfo: ["NSURL": url.path], url: url
             )
         }
         guard url.hasDirectoryPath else {
@@ -227,6 +246,11 @@ open class FileWrapper {
         return newName
     }
 
+    /// Recursively writes the entire contents of a file wrapper to a given file-system URL.
+    /// - Parameters:
+    ///   - path: URL of the file-system node to which the file wrapper’s contents are written.
+    ///   - options: 
+    ///   - originalContentsURL: 
     open func write(
         to path: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?
     ) throws {
