@@ -109,24 +109,33 @@ open class FileWrapper {
         }
     }
 
+    /// The filename of the file wrapper object
     public var filename: String?
 
+    /// The preferred filename for the file wrapper object.
     public var preferredFilename: String?
 
+    /// The contents of the file-system node associated with a regular-file file wrapper.
     public var regularFileContents: Data?
 
+    /// The file wrappers contained by a directory file wrapper.
     public var fileWrappers: [String: FileWrapper]?
 
     private let manager = FileManager.default
 
+    /// This property contains a boolean value that indicates whether the file wrapper object is a
+    /// regular-file.
     public var isRegularFile: Bool {
         fileWrappers == nil && regularFileContents != nil
     }
 
+    /// This property contains a boolean value indicating whether the file wrapper is a directory file
+    /// wrapper.
     public var isDirectory: Bool {
         !isRegularFile
     }
 
+    /// A name helper.
     private var name: String {
         if let name = filename {
             return name
@@ -185,6 +194,18 @@ open class FileWrapper {
         })
     }
 
+    /// Adds a child file wrapper to the receiver, which must be a directory file wrapper.
+    /// 
+    /// Use this method to add an existing file wrapper as a child of a directory file wrapper. If the file
+    /// wrapper does not have a preferred filename, set the ``preferredFilename`` property to give it one
+    /// before calling ``addFileWrapper(_:)``. To create a new file wrapper and add it to a directory, use the
+    /// ``addRegularFile(withContents:preferredFilename:)`` method.
+    /// - Parameter child: File wrapper to add to the directory.
+    /// - Returns: Dictionary key used to store fileWrapper in the directory’s list of file wrappers. The
+    ///            dictionary key is a unique filename, which is the same as the passed-in file wrapper's
+    ///            preferred filename unless that name is already in use as a key in the directory’s
+    ///            dictionary of children. See Accessing File Wrapper Identities in File System Programming
+    ///            Guide for more information about the file-wrapper list structure.
     public func addFileWrapper(_ child: FileWrapper) -> String {
         guard var wrappers = fileWrappers else {
             return ""
