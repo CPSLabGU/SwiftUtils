@@ -248,7 +248,8 @@ open class FileWrapper {
     ///            Guide for more information about the file-wrapper list structure.
     public func addFileWrapper(_ child: FileWrapper) -> String {
         guard var wrappers = fileWrappers else {
-            return ""
+            raise(EXIT_FAILURE)
+            return
         }
         if let childName = child.preferredFilename {
             if wrappers[childName] == nil {
