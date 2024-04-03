@@ -64,9 +64,14 @@ import XCTest
 /// Test class for ``FileWrapper``.
 class FileWrapperTests: XCTestCase {
 
+    #if os(Windows)
+    /// The path to the package root.
+    private let packageRootPath = FileManager.default.currentDirectoryPath
+    #else
     /// The path to the package root.
     private let packageRootPath = URL(fileURLWithPath: #file)
         .pathComponents.prefix { $0 != "Tests" }.joined(separator: "/").dropFirst()
+    #endif
 
     /// IO helper.
     let manager = FileManager.default
