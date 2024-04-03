@@ -126,7 +126,7 @@ class FileWrapperTests: XCTestCase {
         wrapper.preferredFilename = "testDir"
         let wrapper2 = FileWrapper(regularFileWithContents: contents)
         wrapper2.preferredFilename = "data.txt"
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "data.txt")
+        XCTAssertEqual(try wrapper.addFileWrapper(wrapper2), "data.txt")
         let testDir = buildPath.appendingPathComponent("testDir", isDirectory: true)
         try wrapper.write(to: testDir, originalContentsURL: nil)
         var isDirectory: ObjCBool = false
@@ -176,7 +176,7 @@ class FileWrapperTests: XCTestCase {
         wrapper.preferredFilename = testDir
         let wrapper2 = FileWrapper(regularFileWithContents: contentsData)
         wrapper2.preferredFilename = dataTxt
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), dataTxt)
+        XCTAssertEqual(try wrapper.addFileWrapper(wrapper2), dataTxt)
         let path = buildPath.appendingPathComponent(testDir, isDirectory: true)
         print(path.path)
         try wrapper.write(to: path, originalContentsURL: nil)
@@ -192,7 +192,7 @@ class FileWrapperTests: XCTestCase {
         wrapperDir.preferredFilename = testDir
         let dataWrapper = FileWrapper(regularFileWithContents: newContentsData)
         dataWrapper.preferredFilename = dataTxt
-        XCTAssertEqual(wrapperDir.addFileWrapper(dataWrapper), dataTxt)
+        XCTAssertEqual(try wrapperDir.addFileWrapper(dataWrapper), dataTxt)
         XCTAssertThrowsError(try wrapperDir.write(to: path, originalContentsURL: nil))
         XCTAssertFalse(manager.fileExists(atPath: path.path))
     }
@@ -264,7 +264,7 @@ class FileWrapperTests: XCTestCase {
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "")
+        XCTAssertEqual(try wrapper.addFileWrapper(wrapper2), "")
     }
 
 }
