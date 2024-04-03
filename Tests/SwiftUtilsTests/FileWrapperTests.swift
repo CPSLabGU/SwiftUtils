@@ -223,6 +223,35 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(file.regularFileContents, data)
     }
 
+    /// Test URL init reads folder contents correctly.
+    func testURLInitDirectoryNoFileURL() throws {
+        let fooPath = buildPath.path + "/foo"
+        XCTAssertTrue(manager.createFile(atPath: fooPath, contents: "bar".data(using: .utf8)))
+        guard let buildURL = URL(string: buildPath.path) else {
+            XCTFail("Failed to create URL.")
+            return
+        }
+        XCTAssertFalse(buildURL.isFileURL)
+        let wrapper = try FileWrapper(url: buildURL)
+        XCTAssertTrue(wrapper.isDirectory)
+        XCTAssertFalse(wrapper.isRegularFile)
+        XCTAssertEqual(wrapper.preferredFilename, "build")
+        XCTAssertEqual(wrapper.filename, "build")
+        guard let fileContents = wrapper.fileWrappers, let data = "bar".data(using: .utf8) else {
+            XCTFail("Failed to get file contents!")
+            return
+        }
+        XCTAssertEqual(fileContents.count, 1)
+        guard let file = fileContents["foo"] else {
+            XCTFail("Failed to get file!")
+            return
+        }
+        XCTAssertTrue(file.isRegularFile)
+        XCTAssertEqual(file.preferredFilename, "foo")
+        XCTAssertEqual(file.filename, "foo")
+        XCTAssertEqual(file.regularFileContents, data)
+    }
+
     /// Test the `fileName` setter.
     func testFileNameSetter() {
         guard let data = "Test".data(using: .utf8) else {
