@@ -285,14 +285,14 @@ class FileWrapperTests: XCTestCase {
 
     /// Test that the file is renamed when it overwrites a file with the same name.
     func testAddFileWrapperPreferredTaken() throws {
-        guard let data = "Test".data(using: .utf8) else {
+        guard let data = "Test".data(using: .utf8), let data2 = "Duplicate".data(using: .utf8) else {
             XCTFail("Failed to create data.")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = "data.txt"
         let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
-        let wrapper3 = FileWrapper(regularFileWithContents: data)
+        let wrapper3 = FileWrapper(regularFileWithContents: data2)
         wrapper3.preferredFilename = "data.txt"
         XCTAssertNotEqual(wrapper2.addFileWrapper(wrapper3), "data.txt")
         XCTAssertNotNil(wrapper3.preferredFilename)
