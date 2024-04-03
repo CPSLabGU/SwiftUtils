@@ -295,6 +295,7 @@ class FileWrapperTests: XCTestCase {
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
+        XCTAssertNotNil(wrapper.regularFileContents)
         wrapper.preferredFilename = "data.txt"
         try wrapper.write(
             to: self.buildPath.appendingPathComponent("data.txt", isDirectory: false),
@@ -303,6 +304,7 @@ class FileWrapperTests: XCTestCase {
         let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
         wrapper2.preferredFilename = "build"
         let wrapper3 = FileWrapper(regularFileWithContents: data2)
+        XCTAssertNotNil(wrapper3.regularFileContents)
         wrapper3.preferredFilename = "data.txt"
         let key = wrapper2.addFileWrapper(wrapper3)
         XCTAssertNotEqual(key, "data.txt")
@@ -310,7 +312,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertNil(wrapper3.filename)
         try self.manager.removeItem(at: self.buildPath)
         try wrapper2.write(to: self.buildPath, originalContentsURL: nil)
-        XCTAssertEqual(wrapper3.filename, key)
+        XCTAssertNil(wrapper3.filename)
         XCTAssertEqual(
             try String(
                 contentsOf: self.buildPath.appendingPathComponent("data.txt", isDirectory: false),
@@ -324,7 +326,9 @@ class FileWrapperTests: XCTestCase {
             ),
             "Duplicate"
         )
-        XCTAssertEqual(wrapper.filename, "data.txt")
+        XCTAssertNil(wrapper.filename)
+        XCTAssertEqual(wrapper2.fileWrappers?[key]?.regularFileContents, wrapper3.regularFileContents)
+        XCTAssertEqual(wrapper2.fileWrappers?["data.txt"]?.regularFileContents, wrapper.regularFileContents)
     }
 
     /// Test FileWrapper from URL throws error when overwriting deleted file.
