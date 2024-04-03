@@ -133,8 +133,9 @@ open class FileWrapper {
         self.preferredFilename = url.lastPathComponent
         self.filename = url.lastPathComponent
         guard url.isFileURL else {
-            self.fileWrappers = [:]
-            return
+            throw NSError(domain: NSCocoaErrorDomain, code: NSURLErrorUnsupportedURL, userInfo: [
+                "NSURL": url.path
+            ])
         }
         guard url.hasDirectoryPath else {
             let data = try Data(contentsOf: url, options: Data.ReadingOptions(rawValue: options.rawValue))
