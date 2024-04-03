@@ -311,9 +311,9 @@ open class FileWrapper {
         guard let wrappers = fileWrappers else {
             return
         }
-        try wrappers.sorted { $0.0 < $1.0 }.forEach { _, wrapper throws in
+        try wrappers.sorted { $0.0 < $1.0 }.forEach { key, wrapper throws in
             try wrapper.write(
-                to: path.appendingPathComponent(wrapper.name, isDirectory: wrapper.isDirectory),
+                to: path.appendingPathComponent(key, isDirectory: wrapper.isDirectory),
                 options: options,
                 originalContentsURL: originalContentsURL?.appendingPathComponent(
                     wrapper.name, isDirectory: wrapper.isDirectory
