@@ -155,20 +155,6 @@ open class FileWrapper {
         !isRegularFile
     }
 
-    /// A name helper.
-    private var name: String {
-        if let name = filename {
-            return name
-        }
-        if let preferred = preferredFilename {
-            filename = preferred
-            return preferred
-        }
-        filename = UUID().uuidString
-        // swiftlint:disable:next force_unwrapping
-        return filename!
-    }
-
     /// Initializes the receiver as a regular-file file wrapper.
     /// 
     /// After initialization, the file wrapper is not associated with a file-system node until you save it
@@ -289,9 +275,7 @@ open class FileWrapper {
                 throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileReadUnsupportedScheme.rawValue)
             }
             if manager.fileExists(atPath: path.path) {
-                guard (try? manager.removeItem(at: path)) != nil else {
-                    throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
-                }
+                try manager.removeItem(at: path)
             }
             try contents.write(to: path, options: Data.WritingOptions(rawValue: options.rawValue))
             return
@@ -300,7 +284,7 @@ open class FileWrapper {
             throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileWriteFileExists.rawValue)
         }
         guard !manager.fileExists(atPath: path.path) else {
-            _ = try? manager.removeItem(at: path)
+            try manager.removeItem(at: path)
             throw NSError(
                 domain: NSCocoaErrorDomain,
                 code: CocoaError.fileNoSuchFile.rawValue,
@@ -316,7 +300,7 @@ open class FileWrapper {
                 to: path.appendingPathComponent(key, isDirectory: wrapper.isDirectory),
                 options: options,
                 originalContentsURL: originalContentsURL?.appendingPathComponent(
-                    wrapper.name, isDirectory: wrapper.isDirectory
+                    wrapper.filename ?? key, isDirectory: wrapper.isDirectory
                 )
             )
         }
