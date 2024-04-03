@@ -307,6 +307,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertNotEqual(key, "data.txt")
         XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
         XCTAssertNil(wrapper3.filename)
+        try self.manager.removeItem(at: self.buildPath)
         try wrapper2.write(to: self.buildPath, originalContentsURL: nil)
         XCTAssertEqual(wrapper3.filename, key)
         XCTAssertEqual(
