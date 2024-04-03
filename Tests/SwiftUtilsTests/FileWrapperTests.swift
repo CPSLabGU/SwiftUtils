@@ -218,6 +218,20 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(file.regularFileContents, data)
     }
 
+    /// Test the `fileName` setter sets the preferred file name.
+    func testFileNameSetter() {
+        guard let data = "Test".data(using: .utf8) else {
+            XCTFail("Failed to create data.")
+            return
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = "File1"
+        XCTAssertEqual(wrapper.filename, "File1")
+        wrapper.filename = "New File"
+        XCTAssertEqual(wrapper.preferredFilename, "New File")
+        XCTAssertEqual(wrapper.filename, "New File")
+    }
+
 }
 
 // #endif
