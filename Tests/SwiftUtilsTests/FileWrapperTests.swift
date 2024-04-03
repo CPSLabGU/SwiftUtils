@@ -233,8 +233,12 @@ class FileWrapperTests: XCTestCase {
         }
         XCTAssertFalse(buildURL.isFileURL)
         XCTAssertThrowsError(try FileWrapper(url: buildURL)) {
+            guard let error = $0 as? NSError else {
+                XCTFail("Invalid error \($0)")
+                return
+            }
             XCTAssertEqual(
-                $0 as NSError,
+                error,
                 NSError(
                     domain: NSCocoaErrorDomain,
                     code: CocoaError.fileReadUnsupportedScheme.rawValue,
