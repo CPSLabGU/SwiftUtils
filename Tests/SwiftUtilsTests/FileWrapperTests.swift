@@ -294,9 +294,10 @@ class FileWrapperTests: XCTestCase {
         let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
         let wrapper3 = FileWrapper(regularFileWithContents: data2)
         wrapper3.preferredFilename = "data.txt"
-        XCTAssertNotEqual(wrapper2.addFileWrapper(wrapper3), "data.txt")
-        XCTAssertNotNil(wrapper3.preferredFilename)
-        XCTAssertNotEqual(wrapper3.preferredFilename, "data.txt")
+        let key = wrapper2.addFileWrapper(wrapper3)
+        XCTAssertNotEqual(key, "data.txt")
+        XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
+        XCTAssertEqual(wrapper3.filename, key)
     }
 
 }
