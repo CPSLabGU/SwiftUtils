@@ -356,6 +356,20 @@ class FileWrapperTests: XCTestCase {
         }
     }
 
+    /// Test that an empty folder is written correctly.
+    func testWriteEmptyFolder() throws {
+        let wrapper = FileWrapper(directoryWithFileWrappers: [:])
+        wrapper.preferredFilename = "empty"
+        try wrapper.write(to: self.buildPath, originalContentsURL: nil)
+        var isDirectory: ObjCBool = false
+        let emptyPath = self.buildPath.appendingPathComponent("empty", isDirectory: true)
+        XCTAssertTrue(self.manager.fileExists(atPath: emptyPath.path, isDirectory: &isDirectory))
+        XCTAssertTrue(isDirectory.boolValue)
+        XCTAssertTrue(
+            (try self.manager.contentsOfDirectory(at: emptyPath, includingPropertiesForKeys: nil)).isEmpty
+        )
+    }
+
 }
 
 // #endif
