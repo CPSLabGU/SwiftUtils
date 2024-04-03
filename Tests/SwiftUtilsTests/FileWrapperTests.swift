@@ -355,7 +355,7 @@ class FileWrapperTests: XCTestCase {
             XCTAssertEqual(
                 $0 as NSError,
                 CocoaError.error(
-                    .fileNoSuchFile, userInfo: ["NSURL": self.buildPath.path], url: self.buildPath
+                    .fileReadNoSuchFile, userInfo: ["NSURL": self.buildPath.relativePath], url: self.buildPath
                 ) as NSError
             )
         }
