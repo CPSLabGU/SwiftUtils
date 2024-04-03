@@ -186,10 +186,7 @@ class FileWrapperTests: XCTestCase {
         dataWrapper.preferredFilename = dataTxt
         XCTAssertEqual(wrapperDir.addFileWrapper(dataWrapper), dataTxt)
         XCTAssertThrowsError(try wrapperDir.write(to: path, originalContentsURL: nil))
-        var isDirectory: ObjCBool = false
-        XCTAssertFalse(manager.fileExists(atPath: path.path, isDirectory: &isDirectory))
-        XCTAssertTrue(isDirectory.boolValue)
-        XCTAssertEqual(try String(contentsOf: dataPath, encoding: .utf8), contents)
+        XCTAssertFalse(manager.fileExists(atPath: path.path))
     }
 
     /// Test URL init reads folder contents correctly.
