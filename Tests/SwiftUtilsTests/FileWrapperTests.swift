@@ -293,6 +293,7 @@ class FileWrapperTests: XCTestCase {
         wrapper.preferredFilename = "data.txt"
         try wrapper.write(to: self.buildPath, originalContentsURL: nil)
         let wrapper2 = try FileWrapper(url: self.buildPath)
+        try self.manager.removeItem(at: self.buildPath)
         let wrapper3 = FileWrapper(regularFileWithContents: data2)
         wrapper3.preferredFilename = "data.txt"
         let key = wrapper2.addFileWrapper(wrapper3)
