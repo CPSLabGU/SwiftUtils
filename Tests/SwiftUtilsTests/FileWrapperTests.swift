@@ -108,7 +108,7 @@ class FileWrapperTests: XCTestCase {
         wrapper.preferredFilename = "FileWrapperTest.txt"
         let path = buildPath.appendingPathComponent("FileWrapperTest.txt", isDirectory: false)
         try wrapper.write(to: path, originalContentsURL: nil)
-        XCTAssertEqual(wrapper.filename, "FileWrapperTest.txt")
+        XCTAssertNil(wrapper.filename)
         XCTAssertEqual(wrapper.preferredFilename, "FileWrapperTest.txt")
         XCTAssertEqual(try String(contentsOf: path), raw)
     }
@@ -207,6 +207,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertTrue(wrapper.isDirectory)
         XCTAssertFalse(wrapper.isRegularFile)
         XCTAssertEqual(wrapper.preferredFilename, "build")
+        XCTAssertEqual(wrapper.filename, "build")
         guard let fileContents = wrapper.fileWrappers, let data = "bar".data(using: .utf8) else {
             XCTFail("Failed to get file contents!")
             return
@@ -218,6 +219,7 @@ class FileWrapperTests: XCTestCase {
         }
         XCTAssertTrue(file.isRegularFile)
         XCTAssertEqual(file.preferredFilename, "foo")
+        XCTAssertEqual(file.filename, "foo")
         XCTAssertEqual(file.regularFileContents, data)
     }
 
