@@ -331,7 +331,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(wrapper2.fileWrappers?["data.txt"]?.regularFileContents, wrapper.regularFileContents)
     }
 
-    /// Test FileWrapper from URL throws error when overwriting deleted file.
+    // /// Test FileWrapper from URL throws error when overwriting deleted file.
     // func testWriteFileAfterDeletion() throws {
     //     guard let data = "Test".data(using: .utf8), let data2 = "Duplicate".data(using: .utf8) else {
     //         XCTFail("Failed to create data.")
