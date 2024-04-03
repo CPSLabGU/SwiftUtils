@@ -182,7 +182,7 @@ open class FileWrapper {
     open func write(
         to path: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?
     ) throws {
-        if isRegularFile {
+        guard !isRegularFile else {
             guard path.isFileURL, let contents = regularFileContents else {
                 throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileReadUnsupportedScheme.rawValue)
             }
@@ -197,9 +197,8 @@ open class FileWrapper {
         guard path.hasDirectoryPath else {
             throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileWriteFileExists.rawValue)
         }
-        var isDirectory: ObjCBool = false
-        guard !manager.fileExists(atPath: path.path, isDirectory: &isDirectory), isDirectory.boolValue else {
-            try manager.removeItem(at: path)
+        guard !manager.fileExists(atPath: path.path) else {
+            _ = try? manager.removeItem(at: path)
             throw NSError(
                 domain: NSCocoaErrorDomain,
                 code: CocoaError.fileNoSuchFile.rawValue,
