@@ -247,17 +247,13 @@ open class FileWrapper {
     ///            dictionary of children. See Accessing File Wrapper Identities in File System Programming
     ///            Guide for more information about the file-wrapper list structure.
     public func addFileWrapper(_ child: FileWrapper) -> String {
-        guard var wrappers = fileWrappers else {
-            raise(SIGILL)
-            return "throwing \"NSInternalInconsistencyException: -[NSFileWrapper addFileWrapper:] *** " +
-                "this method is only for directory type NSFileWrappers.\""
+        guard var wrappers = fileWrappers, let childName = child.preferredFilename else {
+            return ""
         }
-        if let childName = child.preferredFilename {
-            if wrappers[childName] == nil {
-                wrappers[childName] = child
-                fileWrappers = wrappers
-                return childName
-            }
+        guard wrappers[childName] != nil else {
+            wrappers[childName] = child
+            fileWrappers = wrappers
+            return childName
         }
         var newName = UUID().uuidString
         repeat {
