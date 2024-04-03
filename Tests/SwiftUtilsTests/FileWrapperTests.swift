@@ -256,6 +256,17 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(wrapper.filename, "New File")
     }
 
+    /// Test the add file wrapper handles regular files.
+    func testAddFileWrapperFile() throws {
+        guard let data = "Test".data(using: .utf8) else {
+            XCTFail("Failed to create data.")
+            return
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
+        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "")
+    }
+
 }
 
 // #endif
