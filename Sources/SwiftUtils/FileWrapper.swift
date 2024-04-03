@@ -248,8 +248,9 @@ open class FileWrapper {
     ///            Guide for more information about the file-wrapper list structure.
     public func addFileWrapper(_ child: FileWrapper) -> String {
         guard var wrappers = fileWrappers else {
-            raise(EXIT_FAILURE)
-            return
+            raise(SIGILL)
+            return "throwing \"NSInternalInconsistencyException: -[NSFileWrapper addFileWrapper:] *** " +
+                "this method is only for directory type NSFileWrappers.\""
         }
         if let childName = child.preferredFilename {
             if wrappers[childName] == nil {
