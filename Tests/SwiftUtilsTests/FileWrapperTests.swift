@@ -264,6 +264,10 @@ class FileWrapperTests: XCTestCase {
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
+        #if os(macOS)
+            print(NSExceptionName.internalInconsistencyException)
+            fflush(stdout)
+        #endif
         XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "")
     }
 
