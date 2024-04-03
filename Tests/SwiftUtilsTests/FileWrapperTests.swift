@@ -291,13 +291,30 @@ class FileWrapperTests: XCTestCase {
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = "data.txt"
-        let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
+        try wrapper.write(to: self.buildPath, originalContentsURL: nil)
+        let wrapper2 = try FileWrapper(url: self.buildPath)
         let wrapper3 = FileWrapper(regularFileWithContents: data2)
         wrapper3.preferredFilename = "data.txt"
         let key = wrapper2.addFileWrapper(wrapper3)
         XCTAssertNotEqual(key, "data.txt")
         XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
+        XCTAssertNil(wrapper3.filename)
+        try wrapper2.write(to: self.buildPath, originalContentsURL: nil)
         XCTAssertEqual(wrapper3.filename, key)
+        XCTAssertEqual(
+            try String(
+                contentsOf: self.buildPath.appendingPathComponent("data.txt", isDirectory: false),
+                encoding: .utf8
+            ),
+            "Test"
+        )
+        XCTAssertEqual(
+            try String(
+                contentsOf: self.buildPath.appendingPathComponent(key, isDirectory: false), encoding: .utf8
+            ),
+            "Duplicate"
+        )
+        XCTAssertEqual(wrapper.filename, "data.txt")
     }
 
 }
