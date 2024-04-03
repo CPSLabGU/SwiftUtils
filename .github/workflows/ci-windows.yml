@@ -57,7 +57,7 @@ name: Windows CI
 
 on:
   push:
-    branches: [windows, development, main]
+    branches: [development, main]
   pull_request:
     branches: [development, main]
 
@@ -65,9 +65,9 @@ jobs:
   build_windows:
     strategy:
       matrix:
-        os: [windows-latest]
-        swift: ["5.9"]
-        build_mode: ["debug"]
+        os: [windows-latest, "windows-2022"]
+        swift: ["5.9", "5.8", "5.7"]
+        build_mode: ["debug", "release"]
     name: Swift ${{ matrix.swift }} ${{ matrix.build_mode }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
 
