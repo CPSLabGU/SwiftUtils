@@ -80,30 +80,49 @@ import Foundation
 /// - **Destination node.** Applicable only to symbolic-link file wrappers.
 open class FileWrapper {
 
+    /// Writing options that can be set by the ``write(to:options:originalContentsURL:)`` method.
     public struct WritingOptions: OptionSet {
 
+        /// Whether writing is done atomically.
         public static var atomic: FileWrapper.WritingOptions = FileWrapper.WritingOptions(rawValue: 1)
 
+        /// Whether descendant file wrappers’ ``filename`` properties are set if the writing succeeds.
         public static var withNameUpdating: FileWrapper.WritingOptions = FileWrapper.WritingOptions(
             rawValue: 2
         )
 
+        /// The `rawValue`.
         public var rawValue: UInt
 
+        /// Initialise from the `rawValue`.
         public init(rawValue: UInt) {
             self.rawValue = rawValue
         }
 
     }
 
+    /// Reading options that can be set by the ``init(url:options:)`` and ``read(from:options:)`` methods.
+    /// 
+    /// You can use the `NSFileWrapperReadingImmediate` and `NSFileWrapperReadingWithoutMapping` reading
+    /// options together to take an exact snapshot of a file-system hierarchy that is safe from all errors
+    /// (including the ones mentioned above) once reading has succeeded. If reading with both options
+    /// succeeds, then subsequent invocations of the methods listed in the comment for the
+    /// `NSFileWrapperReadingImmediate` reading option to the receiver and all its descendant file wrappers
+    /// will never fail. However, note that reading with both options together is expensive in terms of both
+    /// I/O and memory for large files, or directories containing large files, or even directories containing
+    /// many small files.
     public struct ReadingOptions: OptionSet {
 
+        /// The option to read files immediately after creating a file wrapper.
         public static var immediate: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 1)
 
+        /// Whether file mapping for regular file wrappers is disallowed.
         public static var withoutMapping: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 2)
 
+        /// The `rawValue`.
         public var rawValue: UInt
 
+        /// Initialise from `rawValue`.
         public init(rawValue: UInt) {
             self.rawValue = rawValue
         }
@@ -121,6 +140,7 @@ open class FileWrapper {
     /// The file wrappers contained by a directory file wrapper.
     public var fileWrappers: [String: FileWrapper]?
 
+    /// A helper file manager.
     private let manager = FileManager.default
 
     /// This property contains a boolean value that indicates whether the file wrapper object is a
@@ -145,6 +165,7 @@ open class FileWrapper {
             return preferred
         }
         filename = UUID().uuidString
+        // swiftlint:disable:next force_unwrapping
         return filename!
     }
 
@@ -249,8 +270,20 @@ open class FileWrapper {
     /// Recursively writes the entire contents of a file wrapper to a given file-system URL.
     /// - Parameters:
     ///   - path: URL of the file-system node to which the file wrapper’s contents are written.
-    ///   - options: 
-    ///   - originalContentsURL: 
+    ///   - options: Option flags for writing to the node located at url. See ``FileWrapper.WritingOptions``
+    ///              for possible values.
+    ///   - originalContentsURL: The location of a previous revision of the contents being written. The
+    ///                          default implementation of this method attempts to avoid unnecessary I/O by
+    ///                          writing hard links to regular files instead of actually writing out their
+    ///                          contents when the contents have not changed. The child file wrappers must
+    ///                          return accurate values when its ``filename`` property is accessed for this to
+    ///                          work. Use the NSFileWrapperWritingWithNameUpdating writing option to increase
+    ///                          the likelihood of that. Specify nil for this parameter if there is no earlier
+    ///                          version of the contents or if you want to ensure that all the contents are
+    ///                          written to files.
+    /// - Returns: `true` when the write operation is successful. If not successful, returns `false` after
+    ///            setting `outError` to an `NSError` object that describes the reason why the file wrapper’s
+    ///            contents could not be written.
     open func write(
         to path: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?
     ) throws {
