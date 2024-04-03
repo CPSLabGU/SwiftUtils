@@ -360,9 +360,9 @@ class FileWrapperTests: XCTestCase {
     func testWriteEmptyFolder() throws {
         let wrapper = FileWrapper(directoryWithFileWrappers: [:])
         wrapper.preferredFilename = "empty"
-        try wrapper.write(to: self.buildPath, originalContentsURL: nil)
-        var isDirectory: ObjCBool = false
         let emptyPath = self.buildPath.appendingPathComponent("empty", isDirectory: true)
+        try wrapper.write(to: emptyPath, originalContentsURL: nil)
+        var isDirectory: ObjCBool = false
         XCTAssertTrue(self.manager.fileExists(atPath: emptyPath.path, isDirectory: &isDirectory))
         XCTAssertTrue(isDirectory.boolValue)
         XCTAssertTrue(
