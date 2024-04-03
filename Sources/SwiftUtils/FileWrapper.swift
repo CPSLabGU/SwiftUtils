@@ -260,7 +260,6 @@ open class FileWrapper {
             newName = UUID().uuidString
         } while (wrappers[newName] != nil)
         wrappers[newName] = child
-        child.preferredFilename = newName
         fileWrappers = wrappers
         return newName
     }
