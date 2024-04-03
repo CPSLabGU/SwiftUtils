@@ -104,9 +104,12 @@ class FileWrapperTests: XCTestCase {
         let wrapper = FileWrapper(regularFileWithContents: contents)
         XCTAssertTrue(wrapper.isRegularFile)
         XCTAssertFalse(wrapper.isDirectory)
+        XCTAssertNil(wrapper.filename)
         wrapper.preferredFilename = "FileWrapperTest.txt"
         let path = buildPath.appendingPathComponent("FileWrapperTest.txt", isDirectory: false)
         try wrapper.write(to: path, originalContentsURL: nil)
+        XCTAssertEqual(wrapper.filename, "FileWrapperTest.txt")
+        XCTAssertEqual(wrapper.preferredFilename, "FileWrapperTest.txt")
         XCTAssertEqual(try String(contentsOf: path), raw)
     }
 
@@ -218,7 +221,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(file.regularFileContents, data)
     }
 
-    /// Test the `fileName` setter sets the preferred file name.
+    /// Test the `fileName` setter.
     func testFileNameSetter() {
         guard let data = "Test".data(using: .utf8) else {
             XCTFail("Failed to create data.")
@@ -226,9 +229,9 @@ class FileWrapperTests: XCTestCase {
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = "File1"
-        XCTAssertEqual(wrapper.filename, "File1")
+        XCTAssertNil(wrapper.filename)
         wrapper.filename = "New File"
-        XCTAssertEqual(wrapper.preferredFilename, "New File")
+        XCTAssertEqual(wrapper.preferredFilename, "File1")
         XCTAssertEqual(wrapper.filename, "New File")
     }
 
