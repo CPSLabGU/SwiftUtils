@@ -59,7 +59,7 @@
 @testable import SwiftUtils
 import XCTest
 
-#if os(Linux) || os(Windows)
+// #if os(Linux) || os(Windows)
 
 /// Test class for ``FileWrapper``.
 class FileWrapperTests: XCTestCase {
@@ -74,7 +74,7 @@ class FileWrapperTests: XCTestCase {
     /// The path to the build folder.
     var buildPath: URL {
         URL(fileURLWithPath: String(packageRootPath), isDirectory: true)
-            .appendingPathComponent("Tests/IOTests/build", isDirectory: true)
+            .appendingPathComponent("Tests/SwiftUtilsTests/build", isDirectory: true)
     }
 
     /// Create build path before every test.
@@ -170,6 +170,7 @@ class FileWrapperTests: XCTestCase {
         wrapper2.preferredFilename = dataTxt
         XCTAssertEqual(wrapper.addFileWrapper(wrapper2), dataTxt)
         let path = buildPath.appendingPathComponent(testDir, isDirectory: true)
+        print(path.path)
         try wrapper.write(to: path, originalContentsURL: nil)
         guard let originalContents = try? String(
             contentsOf: path.appendingPathComponent(dataTxt, isDirectory: false)
@@ -222,4 +223,4 @@ class FileWrapperTests: XCTestCase {
 
 }
 
-#endif
+// #endif

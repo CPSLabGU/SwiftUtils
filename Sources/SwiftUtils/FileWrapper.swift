@@ -215,7 +215,7 @@ open class FileWrapper {
         guard
             !manager.fileExists(atPath: path.path, isDirectory: &isDirectory),
             isDirectory.boolValue,
-            (try? manager.createDirectory(at: path, withIntermediateDirectories: true)) != nil
+            (try? manager.createDirectory(at: path, withIntermediateDirectories: false)) != nil
         else {
             _ = try? manager.removeItem(at: path)
             throw FileError.fileAlreadyExists
