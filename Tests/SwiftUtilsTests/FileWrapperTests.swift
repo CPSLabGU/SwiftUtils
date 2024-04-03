@@ -256,6 +256,7 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(wrapper.filename, "New File")
     }
 
+    #if !os(macOS)
     /// Test the add file wrapper handles regular files.
     func testAddFileWrapperFile() throws {
         guard let data = "Test".data(using: .utf8) else {
@@ -264,11 +265,38 @@ class FileWrapperTests: XCTestCase {
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        #if os(macOS)
-            print(NSExceptionName.internalInconsistencyException)
-            fflush(stdout)
-        #endif
         XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "")
+    }
+    #endif
+
+    #if !os(macOS)
+    /// Test the add file wrapper handles files without names.
+    func testAddFileWrapperNoPreferred() throws {
+        guard let data = "Test".data(using: .utf8) else {
+            XCTFail("Failed to create data.")
+            return
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = nil
+        let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
+        XCTAssertEqual(wrapper2.addFileWrapper(wrapper), "")
+    }
+    #endif
+
+    /// Test that the file is renamed when it overwrites a file with the same name.
+    func testAddFileWrapperPreferredTaken() throws {
+        guard let data = "Test".data(using: .utf8) else {
+            XCTFail("Failed to create data.")
+            return
+        }
+        let wrapper = FileWrapper(regularFileWithContents: data)
+        wrapper.preferredFilename = "data.txt"
+        let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
+        let wrapper3 = FileWrapper(regularFileWithContents: data)
+        wrapper3.preferredFilename = "data.txt"
+        XCTAssertFalse(wrapper2.addFileWrapper(wrapper3).isEmpty)
+        XCTAssertNotNil(wrapper3.preferredFilename)
+        XCTAssertNotEqual(wrapper3.preferredFilename, "data.txt")
     }
 
 }
