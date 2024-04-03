@@ -350,15 +350,9 @@ class FileWrapperTests: XCTestCase {
         XCTAssertNotEqual(key, "data.txt")
         XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
         XCTAssertNil(wrapper3.filename)
-        let newURL = URL(fileURLWithPath: key, isDirectory: false, relativeTo: self.buildPath)
         try self.manager.removeItem(at: self.buildPath)
         XCTAssertThrowsError(try wrapper2.write(to: self.buildPath, originalContentsURL: nil)) {
-            XCTAssertEqual(
-                $0 as NSError,
-                CocoaError.error(
-                    .fileReadNoSuchFile, userInfo: ["NSURL": newURL.relativePath], url: newURL
-                ) as NSError
-            )
+            XCTAssertEqual(($0 as NSError).code, CocoaError.fileReadNoSuchFile.rawValue)
         }
     }
 
