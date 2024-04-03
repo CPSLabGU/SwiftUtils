@@ -172,12 +172,8 @@ class FileWrapperTests: XCTestCase {
         let path = buildPath.appendingPathComponent(testDir, isDirectory: true)
         print(path.path)
         try wrapper.write(to: path, originalContentsURL: nil)
-        guard let originalContents = try? String(
-            contentsOf: path.appendingPathComponent(dataTxt, isDirectory: false)
-        ) else {
-            XCTFail("Failed to read new directory!")
-            return
-        }
+        let dataPath = path.appendingPathComponent(dataTxt, isDirectory: false)
+        let originalContents = try String(contentsOf: dataPath, encoding: .utf8)
         XCTAssertEqual(originalContents, contents)
         let newContents = "Subdir Hello World2!"
         guard let newContentsData = newContents.data(using: .utf8) else {
@@ -193,6 +189,7 @@ class FileWrapperTests: XCTestCase {
         var isDirectory: ObjCBool = false
         XCTAssertFalse(manager.fileExists(atPath: path.path, isDirectory: &isDirectory))
         XCTAssertTrue(isDirectory.boolValue)
+        XCTAssertEqual(try String(contentsOf: dataPath, encoding: .utf8), contents)
     }
 
     /// Test URL init reads folder contents correctly.
