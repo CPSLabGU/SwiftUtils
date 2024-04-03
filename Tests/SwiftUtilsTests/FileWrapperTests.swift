@@ -352,10 +352,14 @@ class FileWrapperTests: XCTestCase {
         XCTAssertNil(wrapper3.filename)
         try self.manager.removeItem(at: self.buildPath)
         XCTAssertThrowsError(try wrapper2.write(to: self.buildPath, originalContentsURL: nil)) {
+            guard let newURL = URL(string: key, relativeTo: self.buildPath) else {
+                XCTFail("Failed to create URL")
+                return
+            }
             XCTAssertEqual(
                 $0 as NSError,
                 CocoaError.error(
-                    .fileReadNoSuchFile, userInfo: ["NSURL": self.buildPath.relativePath], url: self.buildPath
+                    .fileReadNoSuchFile, userInfo: ["NSURL": newURL.relativePath], url: newURL
                 ) as NSError
             )
         }
