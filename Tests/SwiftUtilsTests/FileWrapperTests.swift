@@ -351,7 +351,14 @@ class FileWrapperTests: XCTestCase {
         XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
         XCTAssertNil(wrapper3.filename)
         try self.manager.removeItem(at: self.buildPath)
-        XCTAssertThrowsError(try wrapper2.write(to: self.buildPath, originalContentsURL: nil))
+        XCTAssertThrowsError(try wrapper2.write(to: self.buildPath, originalContentsURL: nil)) {
+            XCTAssertEqual(
+                $0 as NSError,
+                CocoaError.error(
+                    .fileNoSuchFile, userInfo: ["NSURL": self.buildPath.path], url: self.buildPath
+                ) as NSError
+            )
+        }
     }
 
 }
