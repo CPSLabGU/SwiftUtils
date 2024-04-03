@@ -60,6 +60,24 @@
 
 import Foundation
 
+/// A representation of a node (a file, directory, or symbolic link) in the file system.
+/// 
+/// The FileWrapper class provides access to the attributes and contents of file system nodes. A file system
+/// node is a file, directory, or symbolic link. Instances of this class are known as file wrappers.
+/// File wrappers represent a file system node as an object that can be displayed as an image (and possibly
+/// edited in place), saved to the file system, or transmitted to another application.
+/// 
+/// There are three types of file wrappers:
+/// - **Regular-file file wrapper**: Represents a regular file.
+/// - **Directory file wrapper**: Represents a directory.
+/// - **Symbolic-link file wrapper**: Represents a symbolic link.
+/// A file wrapper has these attributes:
+/// - **Filename.**: The name of the file system node the file wrapper represents.
+/// - **file-system attributes.** See ``Foundation.FileManager`` for information on the contents of the
+/// `attributes` dictionary.
+/// - **Regular-file contents.** Applicable only to regular-file file wrappers.
+/// - **File wrappers.** Applicable only to directory file wrappers.
+/// - **Destination node.** Applicable only to symbolic-link file wrappers.
 open class FileWrapper {
 
     public struct WritingOptions: OptionSet {
@@ -129,6 +147,18 @@ open class FileWrapper {
         self.fileWrappers = directoryWithFileWrappers
     }
 
+    /// Initializes a file wrapper instance whose kind is determined by the type of file-system node located
+    /// by the URL.
+    /// 
+    /// If url is a directory, this method recursively creates file wrappers for each node within that
+    /// directory. Use the `fileWrappers` property to get the file wrappers of the nodes contained by the
+    /// directory.
+    /// - Parameters:
+    ///     - url: URL of the file-system node the file wrapper is to represent.
+    ///     - options: Option flags for reading the node located at `url`. See ``FileWrapper.ReadingOptions``
+    ///                for possible values.
+    /// - Returns: File wrapper for the file-system node at url. May be a directory, file, or symbolic link,
+    ///            depending on what is located at the URL. Returns false (0) if reading is not successful.
     public init(url: URL, options: FileWrapper.ReadingOptions = []) throws {
         self.preferredFilename = url.lastPathComponent
         self.filename = url.lastPathComponent
