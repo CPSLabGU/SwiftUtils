@@ -200,7 +200,11 @@ open class FileWrapper {
         var isDirectory: ObjCBool = false
         guard !manager.fileExists(atPath: path.path, isDirectory: &isDirectory), isDirectory.boolValue else {
             try manager.removeItem(at: path)
-            throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
+            throw NSError(
+                domain: NSCocoaErrorDomain,
+                code: CocoaError.fileNoSuchFile.rawValue,
+                userInfo: ["NSFilePath": path.path, "NSUnderlyingError": POSIXError.EBADF]
+            )
         }
         try manager.createDirectory(at: path, withIntermediateDirectories: false)
         guard let wrappers = fileWrappers else {
