@@ -56,7 +56,7 @@
  *
  */
 
-#if (os(Linux) || os(Windows)) && canImport(Foundation) && !NO_FOUNDATION
+#if (os(Linux) || os(Windows)) && canImport(Foundation)
 
 import Foundation
 
@@ -89,20 +89,6 @@ open class FileWrapper {
         public init(rawValue: UInt) {
             self.rawValue = rawValue
         }
-    }
-
-    public enum FileError: Error {
-
-        case notDirectory
-
-        case notRegularFile
-
-        case fileNotFound
-
-        case fileAlreadyExists
-
-        case cannotGetFileName
-
     }
 
     public var filename: String? {
@@ -166,7 +152,7 @@ open class FileWrapper {
         self.fileWrappers = Dictionary(uniqueKeysWithValues: try urls.map {
             let wrapper = try FileWrapper(url: $0)
             guard let fileName = wrapper.preferredFilename else {
-                throw FileError.cannotGetFileName
+                throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
             }
             return (fileName, wrapper)
         })
@@ -198,28 +184,25 @@ open class FileWrapper {
     ) throws {
         if isRegularFile {
             guard path.isFileURL, let contents = regularFileContents else {
-                throw FileError.notRegularFile
+                throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileReadUnsupportedScheme.rawValue)
             }
             if manager.fileExists(atPath: path.path) {
                 guard (try? manager.removeItem(at: path)) != nil else {
-                    throw FileError.fileNotFound
+                    throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
                 }
             }
             try contents.write(to: path, options: Data.WritingOptions(rawValue: options.rawValue))
             return
         }
         guard path.hasDirectoryPath else {
-            throw FileError.notDirectory
+            throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileWriteFileExists.rawValue)
         }
         var isDirectory: ObjCBool = false
-        guard
-            !manager.fileExists(atPath: path.path, isDirectory: &isDirectory),
-            isDirectory.boolValue,
-            (try? manager.createDirectory(at: path, withIntermediateDirectories: false)) != nil
-        else {
-            _ = try? manager.removeItem(at: path)
-            throw FileError.fileAlreadyExists
+        guard !manager.fileExists(atPath: path.path, isDirectory: &isDirectory), isDirectory.boolValue else {
+            try manager.removeItem(at: path)
+            throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
         }
+        try manager.createDirectory(at: path, withIntermediateDirectories: false)
         guard let wrappers = fileWrappers else {
             return
         }

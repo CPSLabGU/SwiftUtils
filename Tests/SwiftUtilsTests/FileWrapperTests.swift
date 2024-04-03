@@ -189,9 +189,7 @@ class FileWrapperTests: XCTestCase {
         let dataWrapper = FileWrapper(regularFileWithContents: newContentsData)
         dataWrapper.preferredFilename = dataTxt
         XCTAssertEqual(wrapperDir.addFileWrapper(dataWrapper), dataTxt)
-        XCTAssertThrowsError(try wrapperDir.write(to: path, originalContentsURL: nil)) {
-            XCTAssertEqual($0 as? FileWrapper.FileError, FileWrapper.FileError.fileAlreadyExists)
-        }
+        XCTAssertThrowsError(try wrapperDir.write(to: path, originalContentsURL: nil))
         var isDirectory: ObjCBool = false
         XCTAssertFalse(manager.fileExists(atPath: path.path, isDirectory: &isDirectory))
         XCTAssertTrue(isDirectory.boolValue)
