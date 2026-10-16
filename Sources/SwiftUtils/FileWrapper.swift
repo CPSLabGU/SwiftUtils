@@ -128,7 +128,7 @@ open class FileWrapper {
         }
     }
 
-    /// The filename of the file wrapper object
+    /// The filename of the file wrapper object.
     public var filename: String?
 
     /// The preferred filename for the file wrapper object.
