@@ -1,6 +1,6 @@
 /*
- * FileWrapper.swift 
- * IO 
+ * FileWrapper.swift
+ * IO
  *
  * Created by Morgan McColl on 03/10/2021.
  * Copyright © 2021 Morgan McColl. All rights reserved.
@@ -61,12 +61,12 @@
 import Foundation
 
 /// A representation of a node (a file, directory, or symbolic link) in the file system.
-/// 
+///
 /// The FileWrapper class provides access to the attributes and contents of file system nodes. A file system
 /// node is a file, directory, or symbolic link. Instances of this class are known as file wrappers.
 /// File wrappers represent a file system node as an object that can be displayed as an image (and possibly
 /// edited in place), saved to the file system, or transmitted to another application.
-/// 
+///
 /// There are three types of file wrappers:
 /// - **Regular-file file wrapper**: Represents a regular file.
 /// - **Directory file wrapper**: Represents a directory.
@@ -84,10 +84,10 @@ open class FileWrapper {
     public struct WritingOptions: OptionSet {
 
         /// Whether writing is done atomically.
-        public static var atomic: FileWrapper.WritingOptions = FileWrapper.WritingOptions(rawValue: 1)
+        public static let atomic: FileWrapper.WritingOptions = FileWrapper.WritingOptions(rawValue: 1)
 
         /// Whether descendant file wrappers’ ``filename`` properties are set if the writing succeeds.
-        public static var withNameUpdating: FileWrapper.WritingOptions = FileWrapper.WritingOptions(
+        public static let withNameUpdating: FileWrapper.WritingOptions = FileWrapper.WritingOptions(
             rawValue: 2
         )
 
@@ -102,7 +102,7 @@ open class FileWrapper {
     }
 
     /// Reading options that can be set by the ``init(url:options:)`` and ``read(from:options:)`` methods.
-    /// 
+    ///
     /// You can use the `NSFileWrapperReadingImmediate` and `NSFileWrapperReadingWithoutMapping` reading
     /// options together to take an exact snapshot of a file-system hierarchy that is safe from all errors
     /// (including the ones mentioned above) once reading has succeeded. If reading with both options
@@ -114,10 +114,10 @@ open class FileWrapper {
     public struct ReadingOptions: OptionSet {
 
         /// The option to read files immediately after creating a file wrapper.
-        public static var immediate: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 1)
+        public static let immediate: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 1)
 
         /// Whether file mapping for regular file wrappers is disallowed.
-        public static var withoutMapping: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 2)
+        public static let withoutMapping: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 2)
 
         /// The `rawValue`.
         public var rawValue: UInt
@@ -156,13 +156,13 @@ open class FileWrapper {
     }
 
     /// Initializes the receiver as a regular-file file wrapper.
-    /// 
+    ///
     /// After initialization, the file wrapper is not associated with a file-system node until you save it
     /// using ``write(to:options:originalContentsURL:)``. The receiver is initialized with open permissions:
     /// anyone can read, write, or modify the directory on disk. If any file wrapper in the directory doesn’t
     /// have a preferred filename, its preferred name is automatically set to its corresponding key in the
     /// childrenByPreferredName dictionary.
-    /// 
+    ///
     /// After initialization, the file wrapper is not associated with a file-system node until you save it
     /// using ``write(to:options:originalContentsURL:)``. The file wrapper is initialized with open
     /// permissions: anyone can write to or read the file wrapper.
@@ -186,7 +186,7 @@ open class FileWrapper {
 
     /// Initializes a file wrapper instance whose kind is determined by the type of file-system node located
     /// by the URL.
-    /// 
+    ///
     /// If url is a directory, this method recursively creates file wrappers for each node within that
     /// directory. Use the `fileWrappers` property to get the file wrappers of the nodes contained by the
     /// directory.
@@ -201,7 +201,9 @@ open class FileWrapper {
         self.filename = url.lastPathComponent
         guard url.isFileURL else {
             throw CocoaError.error(
-                .fileReadUnsupportedScheme, userInfo: ["NSURL": url.path], url: url
+                .fileReadUnsupportedScheme,
+                userInfo: ["NSURL": url.path],
+                url: url
             )
         }
         guard url.hasDirectoryPath else {
@@ -211,17 +213,19 @@ open class FileWrapper {
         }
         let manager = FileManager()
         let urls = try manager.contentsOfDirectory(at: url, includingPropertiesForKeys: nil)
-        self.fileWrappers = Dictionary(uniqueKeysWithValues: try urls.map {
-            let wrapper = try FileWrapper(url: $0)
-            guard let fileName = wrapper.preferredFilename else {
-                throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
+        self.fileWrappers = Dictionary(
+            uniqueKeysWithValues: try urls.map {
+                let wrapper = try FileWrapper(url: $0)
+                guard let fileName = wrapper.preferredFilename else {
+                    throw NSError(domain: NSCocoaErrorDomain, code: CocoaError.fileNoSuchFile.rawValue)
+                }
+                return (fileName, wrapper)
             }
-            return (fileName, wrapper)
-        })
+        )
     }
 
     /// Adds a child file wrapper to the receiver, which must be a directory file wrapper.
-    /// 
+    ///
     /// Use this method to add an existing file wrapper as a child of a directory file wrapper. If the file
     /// wrapper does not have a preferred filename, set the ``preferredFilename`` property to give it one
     /// before calling ``addFileWrapper(_:)``. To create a new file wrapper and add it to a directory, use the
@@ -244,7 +248,7 @@ open class FileWrapper {
         var newName = UUID().uuidString
         repeat {
             newName = UUID().uuidString
-        } while (wrappers[newName] != nil)
+        } while wrappers[newName] != nil
         wrappers[newName] = child
         fileWrappers = wrappers
         return newName
@@ -268,7 +272,9 @@ open class FileWrapper {
     ///            setting `outError` to an `NSError` object that describes the reason why the file wrapper’s
     ///            contents could not be written.
     open func write(
-        to path: URL, options: FileWrapper.WritingOptions = [], originalContentsURL: URL?
+        to path: URL,
+        options: FileWrapper.WritingOptions = [],
+        originalContentsURL: URL?
     ) throws {
         guard !isRegularFile else {
             guard path.isFileURL, let contents = regularFileContents else {
@@ -295,15 +301,18 @@ open class FileWrapper {
         guard let wrappers = fileWrappers else {
             return
         }
-        try wrappers.sorted { $0.0 < $1.0 }.forEach { key, wrapper throws in
-            try wrapper.write(
-                to: path.appendingPathComponent(key, isDirectory: wrapper.isDirectory),
-                options: options,
-                originalContentsURL: originalContentsURL?.appendingPathComponent(
-                    wrapper.filename ?? key, isDirectory: wrapper.isDirectory
+        try wrappers.sorted { $0.0 < $1.0 }
+            .forEach { key, wrapper throws in
+                try wrapper.write(
+                    to: path.appendingPathComponent(key, isDirectory: wrapper.isDirectory),
+                    options: options,
+                    originalContentsURL: originalContentsURL?
+                        .appendingPathComponent(
+                            wrapper.filename ?? key,
+                            isDirectory: wrapper.isDirectory
+                        )
                 )
-            )
-        }
+            }
     }
 
 }
