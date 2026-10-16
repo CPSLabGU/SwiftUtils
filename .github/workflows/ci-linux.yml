@@ -5,40 +5,13 @@ on:
     branches: [development, main]
   pull_request:
     branches: [development, main]
+  schedule:
+    - cron: '0 16 * * *'
+  workflow_dispatch:
 
 jobs:
-  build_linux:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, ubuntu-22.04, ubuntu-20.04]
-        swift: ["5.9", "5.8", "5.7"]
-        build_mode: ["debug", "release"]
-    name: Swift ${{ matrix.swift }} ${{ matrix.build_mode }} on ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-
-    steps:
-      - uses: swift-actions/setup-swift@v1
-        with:
-          swift-version: ${{ matrix.swift }}
-
-      - name: Setup SSH Key
-        run: | 
-          rm -rf ~/.ssh
-          mkdir -m 0700 ~/.ssh
-          echo "${{ secrets.WORKFLOWS_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
-          echo "${{ secrets.WORKFLOWS_SSH_PUBLIC_KEY }}" > ~/.ssh/id_ed25519.pub
-          chmod 0600 ~/.ssh/id_ed25519
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_ed25519
-
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      
-      #- name: Reconfigure Private Repo URLs
-      #  run: sed -i 's/git@github.com:/https:\/\/${{ secrets.ACCESS_TOKEN }}@github.com\//g' Package.swift
-
-      - name: build
-        run: swift build -c ${{ matrix.build_mode }}
-
-      - name: Test
-        run: swift test -c ${{ matrix.build_mode }}
+  ci-linux:
+    uses: cpslabgu/swift-workflows/.github/workflows/ci-linux.yml@main
+    secrets:
+      SSH_PRIVATE_KEY: ${{ secrets.WORKFLOWS_SSH_PRIVATE_KEY }}
+      SSH_PUBLIC_KEY: ${{ secrets.WORKFLOWS_SSH_PUBLIC_KEY }}

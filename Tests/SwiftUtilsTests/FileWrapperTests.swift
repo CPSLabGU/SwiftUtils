@@ -1,6 +1,6 @@
 /*
- * FileWrapperTests.swift 
- * IOTests 
+ * FileWrapperTests.swift
+ * IOTests
  *
  * Created by Morgan McColl on 03/10/2021.
  * Copyright © 2021 Morgan McColl. All rights reserved.
@@ -56,13 +56,15 @@
  *
  */
 
+import Foundation
 @testable import SwiftUtils
-import XCTest
+import Testing
 
 // #if os(Linux) || os(Windows)
 
 /// Test class for ``FileWrapper``.
-class FileWrapperTests: XCTestCase {
+@Suite(.serialized)
+final class FileWrapperTests {
 
     #if os(Windows)
     /// The path to the package root.
@@ -88,69 +90,72 @@ class FileWrapperTests: XCTestCase {
     }
 
     /// Create build path before every test.
-    override func setUp() {
+    init() {
         if !manager.fileExists(atPath: buildPath.path) {
             _ = try? manager.createDirectory(at: buildPath, withIntermediateDirectories: true)
         }
     }
 
     /// Remove build folder after every test.
-    override func tearDown() {
+    deinit {
         _ = try? manager.removeItem(at: buildPath)
     }
 
     /// Test wrapper can write a single file.
+    @Test
     func testWriteFileWrapper() throws {
         let raw = "Hello World!"
         guard let contents = raw.data(using: .utf8) else {
-            XCTFail("Failed to create data!")
+            Issue.record("Failed to create data!")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: contents)
-        XCTAssertTrue(wrapper.isRegularFile)
-        XCTAssertFalse(wrapper.isDirectory)
-        XCTAssertNil(wrapper.filename)
+        #expect(wrapper.isRegularFile)
+        #expect(!wrapper.isDirectory)
+        #expect(wrapper.filename == nil)
         wrapper.preferredFilename = "FileWrapperTest.txt"
         let path = buildPath.appendingPathComponent("FileWrapperTest.txt", isDirectory: false)
         try wrapper.write(to: path, originalContentsURL: nil)
-        XCTAssertNil(wrapper.filename)
-        XCTAssertEqual(wrapper.preferredFilename, "FileWrapperTest.txt")
-        XCTAssertEqual(try String(contentsOf: path), raw)
+        #expect(wrapper.filename == nil)
+        #expect(wrapper.preferredFilename == "FileWrapperTest.txt")
+        #expect(try String(contentsOf: path, encoding: .utf8) == raw)
     }
 
     /// Test wrapper can write a directory.
+    @Test
     func testWriteDirectory() throws {
         let raw = "Subdir Hello World!"
         guard let contents = raw.data(using: .utf8) else {
-            XCTFail("Failed to create data!")
+            Issue.record("Failed to create data!")
             return
         }
         let wrapper = FileWrapper(directoryWithFileWrappers: [:])
-        XCTAssertTrue(wrapper.isDirectory)
-        XCTAssertFalse(wrapper.isRegularFile)
+        #expect(wrapper.isDirectory)
+        #expect(!wrapper.isRegularFile)
         wrapper.preferredFilename = "testDir"
         let wrapper2 = FileWrapper(regularFileWithContents: contents)
         wrapper2.preferredFilename = "data.txt"
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "data.txt")
+        #expect(wrapper.addFileWrapper(wrapper2) == "data.txt")
         let testDir = buildPath.appendingPathComponent("testDir", isDirectory: true)
         try wrapper.write(to: testDir, originalContentsURL: nil)
         var isDirectory: ObjCBool = false
-        XCTAssertTrue(manager.fileExists(atPath: testDir.path, isDirectory: &isDirectory))
-        XCTAssertTrue(isDirectory.boolValue)
+        #expect(manager.fileExists(atPath: testDir.path, isDirectory: &isDirectory))
+        #expect(isDirectory.boolValue)
         let dataTxt = testDir.appendingPathComponent("data.txt", isDirectory: false)
-        XCTAssertTrue(manager.fileExists(atPath: dataTxt.path, isDirectory: &isDirectory))
-        XCTAssertFalse(isDirectory.boolValue)
-        let data = try String(contentsOf: dataTxt)
-        XCTAssertEqual(data, raw)
+        #expect(manager.fileExists(atPath: dataTxt.path, isDirectory: &isDirectory))
+        #expect(!isDirectory.boolValue)
+        let data = try String(contentsOf: dataTxt, encoding: .utf8)
+        #expect(data == raw)
     }
 
     /// Test FileWrapper can overwrite a file.
+    @Test
     func testOverwriteFile() throws {
         let newContents = "New Hello World!"
         guard
             let contents = "Hello World!".data(using: .utf8), let newData = newContents.data(using: .utf8)
         else {
-            XCTFail("Failed to create data.")
+            Issue.record("Failed to create data.")
             return
         }
         let fileName = "FileWrapperTest.txt"
@@ -161,18 +166,18 @@ class FileWrapperTests: XCTestCase {
         let newWrapper = FileWrapper(regularFileWithContents: newData)
         newWrapper.preferredFilename = fileName
         try newWrapper.write(to: path, originalContentsURL: nil)
-        guard let readContents = try? String(contentsOf: path) else {
-            XCTFail("Failed to read file.")
+        guard let readContents = try? String(contentsOf: path, encoding: .utf8) else {
+            Issue.record("Failed to read file.")
             return
         }
-        XCTAssertEqual(readContents, newContents)
+        #expect(readContents == newContents)
     }
 
     /// Test FileWrapper successfully overwrite a directory with new data.
     func testOverwriteDirectory() throws {
         let contents = "Subdir Hello World!"
         guard let contentsData = contents.data(using: .utf8) else {
-            XCTFail("Failed to convert contents to data.")
+            Issue.record("Failed to convert contents to data.")
             return
         }
         let testDir = "testDir"
@@ -181,121 +186,131 @@ class FileWrapperTests: XCTestCase {
         wrapper.preferredFilename = testDir
         let wrapper2 = FileWrapper(regularFileWithContents: contentsData)
         wrapper2.preferredFilename = dataTxt
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), dataTxt)
+        #expect(wrapper.addFileWrapper(wrapper2) == dataTxt)
         let path = buildPath.appendingPathComponent(testDir, isDirectory: true)
         print(path.path)
         try wrapper.write(to: path, originalContentsURL: nil)
         let dataPath = path.appendingPathComponent(dataTxt, isDirectory: false)
         let originalContents = try String(contentsOf: dataPath, encoding: .utf8)
-        XCTAssertEqual(originalContents, contents)
+        #expect(originalContents == contents)
         let newContents = "Subdir Hello World2!"
         guard let newContentsData = newContents.data(using: .utf8) else {
-            XCTFail("Failed to convert new contents into data.")
+            Issue.record("Failed to convert new contents into data.")
             return
         }
         let wrapperDir = FileWrapper(directoryWithFileWrappers: [:])
         wrapperDir.preferredFilename = testDir
         let dataWrapper = FileWrapper(regularFileWithContents: newContentsData)
         dataWrapper.preferredFilename = dataTxt
-        XCTAssertEqual(wrapperDir.addFileWrapper(dataWrapper), dataTxt)
-        XCTAssertThrowsError(try wrapperDir.write(to: path, originalContentsURL: nil))
-        XCTAssertFalse(manager.fileExists(atPath: path.path))
+        #expect(wrapperDir.addFileWrapper(dataWrapper) == dataTxt)
+        #expect(throws: (any Error).self) {
+            try wrapperDir.write(to: path, originalContentsURL: nil)
+        }
+        #expect(!manager.fileExists(atPath: path.path))
     }
 
     /// Test URL init reads folder contents correctly.
+    @Test
     func testURLInitDirectory() throws {
-        XCTAssertTrue(manager.createFile(
-            atPath: buildPath.appendingPathComponent("foo", isDirectory: false).path,
-            contents: "bar".data(using: .utf8)
-        ))
+        #expect(
+            manager.createFile(
+                atPath: buildPath.appendingPathComponent("foo", isDirectory: false).path,
+                contents: "bar".data(using: .utf8)
+            )
+        )
         let wrapper = try FileWrapper(url: buildPath)
-        XCTAssertTrue(wrapper.isDirectory)
-        XCTAssertFalse(wrapper.isRegularFile)
-        XCTAssertEqual(wrapper.preferredFilename, "build")
-        XCTAssertEqual(wrapper.filename, "build")
+        #expect(wrapper.isDirectory)
+        #expect(!wrapper.isRegularFile)
+        #expect(wrapper.preferredFilename == "build")
+        #expect(wrapper.filename == "build")
         guard let fileContents = wrapper.fileWrappers, let data = "bar".data(using: .utf8) else {
-            XCTFail("Failed to get file contents!")
+            Issue.record("Failed to get file contents!")
             return
         }
-        XCTAssertEqual(fileContents.count, 1)
+        #expect(fileContents.count == 1)
         guard let file = fileContents["foo"] else {
-            XCTFail("Failed to get file!")
+            Issue.record("Failed to get file!")
             return
         }
-        XCTAssertTrue(file.isRegularFile)
-        XCTAssertEqual(file.preferredFilename, "foo")
-        XCTAssertEqual(file.filename, "foo")
-        XCTAssertEqual(file.regularFileContents, data)
+        #expect(file.isRegularFile)
+        #expect(file.preferredFilename == "foo")
+        #expect(file.filename == "foo")
+        #expect(file.regularFileContents == data)
     }
 
     /// Test URL init reads folder contents correctly.
+    @Test
     func testURLInitDirectoryNoFileURL() throws {
         let fooPath = buildPath.path + "/foo"
-        XCTAssertTrue(manager.createFile(atPath: fooPath, contents: "bar".data(using: .utf8)))
+        #expect(manager.createFile(atPath: fooPath, contents: "bar".data(using: .utf8)))
         guard let buildURL = URL(string: buildPath.path) else {
-            XCTFail("Failed to create URL.")
+            Issue.record("Failed to create URL.")
             return
         }
-        XCTAssertFalse(buildURL.isFileURL)
-        XCTAssertThrowsError(try FileWrapper(url: buildURL)) {
-            XCTAssertEqual(
-                $0 as NSError,
-                CocoaError.error(
-                    .fileReadUnsupportedScheme, userInfo: ["NSURL": buildURL.path], url: buildURL
-                ) as NSError
-            )
-        }
+        #expect(!buildURL.isFileURL)
+        let error = #expect(throws: (NSError).self) { try FileWrapper(url: buildURL) }
+        #expect(
+            error == CocoaError.error(
+                .fileReadUnsupportedScheme,
+                userInfo: ["NSURL": buildURL.path],
+                url: buildURL
+            ) as NSError
+        )
     }
 
     /// Test the `fileName` setter.
+    @Test
     func testFileNameSetter() {
         guard let data = "Test".data(using: .utf8) else {
-            XCTFail("Failed to create data.")
+            Issue.record("Failed to create data.")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = "File1"
-        XCTAssertNil(wrapper.filename)
+        #expect(wrapper.filename == nil)
         wrapper.filename = "New File"
-        XCTAssertEqual(wrapper.preferredFilename, "File1")
-        XCTAssertEqual(wrapper.filename, "New File")
+        #expect(wrapper.preferredFilename == "File1")
+        #expect(wrapper.filename == "New File")
     }
 
     #if !os(macOS)
     /// Test the add file wrapper handles regular files.
+    @Test
     func testAddFileWrapperFile() throws {
         guard let data = "Test".data(using: .utf8) else {
-            XCTFail("Failed to create data.")
+            Issue.record("Failed to create data.")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        XCTAssertEqual(wrapper.addFileWrapper(wrapper2), "")
+        #expect(wrapper.addFileWrapper(wrapper2) == "")
     }
     #endif
 
     #if !os(macOS)
     /// Test the add file wrapper handles files without names.
+    @Test
     func testAddFileWrapperNoPreferred() throws {
         guard let data = "Test".data(using: .utf8) else {
-            XCTFail("Failed to create data.")
+            Issue.record("Failed to create data.")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = nil
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        XCTAssertEqual(wrapper2.addFileWrapper(wrapper), "")
+        #expect(wrapper2.addFileWrapper(wrapper) == "")
     }
     #endif
 
     /// Test that the file is renamed when it overwrites a file with the same name.
+    @Test
     func testAddFileWrapperPreferredTaken() throws {
         guard let data = "Test".data(using: .utf8), let data2 = "Duplicate".data(using: .utf8) else {
-            XCTFail("Failed to create data.")
+            Issue.record("Failed to create data.")
             return
         }
         let wrapper = FileWrapper(regularFileWithContents: data)
-        XCTAssertNotNil(wrapper.regularFileContents)
+        #expect(wrapper.regularFileContents != nil)
         wrapper.preferredFilename = "data.txt"
         try wrapper.write(
             to: self.buildPath.appendingPathComponent("data.txt", isDirectory: false),
@@ -304,31 +319,30 @@ class FileWrapperTests: XCTestCase {
         let wrapper2 = FileWrapper(directoryWithFileWrappers: ["data.txt": wrapper])
         wrapper2.preferredFilename = "build"
         let wrapper3 = FileWrapper(regularFileWithContents: data2)
-        XCTAssertNotNil(wrapper3.regularFileContents)
+        #expect(wrapper3.regularFileContents != nil)
         wrapper3.preferredFilename = "data.txt"
         let key = wrapper2.addFileWrapper(wrapper3)
-        XCTAssertNotEqual(key, "data.txt")
-        XCTAssertEqual(wrapper3.preferredFilename, "data.txt")
-        XCTAssertNil(wrapper3.filename)
+        #expect(key != "data.txt")
+        #expect(wrapper3.preferredFilename == "data.txt")
+        #expect(wrapper3.filename == nil)
         try self.manager.removeItem(at: self.buildPath)
         try wrapper2.write(to: self.buildPath, originalContentsURL: nil)
-        XCTAssertNil(wrapper3.filename)
-        XCTAssertEqual(
+        #expect(wrapper3.filename == nil)
+        #expect(
             try String(
                 contentsOf: self.buildPath.appendingPathComponent("data.txt", isDirectory: false),
                 encoding: .utf8
-            ),
-            "Test"
+            ) == "Test"
         )
-        XCTAssertEqual(
+        #expect(
             try String(
-                contentsOf: self.buildPath.appendingPathComponent(key, isDirectory: false), encoding: .utf8
-            ),
-            "Duplicate"
+                contentsOf: self.buildPath.appendingPathComponent(key, isDirectory: false),
+                encoding: .utf8
+            ) == "Duplicate"
         )
-        XCTAssertNil(wrapper.filename)
-        XCTAssertEqual(wrapper2.fileWrappers?[key]?.regularFileContents, wrapper3.regularFileContents)
-        XCTAssertEqual(wrapper2.fileWrappers?["data.txt"]?.regularFileContents, wrapper.regularFileContents)
+        #expect(wrapper.filename == nil)
+        #expect(wrapper2.fileWrappers?[key]?.regularFileContents == wrapper3.regularFileContents)
+        #expect(wrapper2.fileWrappers?["data.txt"]?.regularFileContents == wrapper.regularFileContents)
     }
 
     // /// Test FileWrapper from URL throws error when overwriting deleted file.
@@ -357,15 +371,16 @@ class FileWrapperTests: XCTestCase {
     // }
 
     /// Test that an empty folder is written correctly.
+    @Test
     func testWriteEmptyFolder() throws {
         let wrapper = FileWrapper(directoryWithFileWrappers: [:])
         wrapper.preferredFilename = "empty"
         let emptyPath = self.buildPath.appendingPathComponent("empty", isDirectory: true)
         try wrapper.write(to: emptyPath, originalContentsURL: nil)
         var isDirectory: ObjCBool = false
-        XCTAssertTrue(self.manager.fileExists(atPath: emptyPath.path, isDirectory: &isDirectory))
-        XCTAssertTrue(isDirectory.boolValue)
-        XCTAssertTrue(
+        #expect(self.manager.fileExists(atPath: emptyPath.path, isDirectory: &isDirectory))
+        #expect(isDirectory.boolValue)
+        #expect(
             (try self.manager.contentsOfDirectory(at: emptyPath, includingPropertiesForKeys: nil)).isEmpty
         )
     }
