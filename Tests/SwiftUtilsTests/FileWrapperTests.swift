@@ -1,6 +1,6 @@
 /*
- * FileWrapperTests.swift 
- * IOTests 
+ * FileWrapperTests.swift
+ * IOTests
  *
  * Created by Morgan McColl on 03/10/2021.
  * Copyright © 2021 Morgan McColl. All rights reserved.
@@ -115,7 +115,7 @@ class FileWrapperTests: XCTestCase {
         try wrapper.write(to: path, originalContentsURL: nil)
         XCTAssertNil(wrapper.filename)
         XCTAssertEqual(wrapper.preferredFilename, "FileWrapperTest.txt")
-        XCTAssertEqual(try String(contentsOf: path), raw)
+        XCTAssertEqual(try String(contentsOf: path, encoding: .utf8), raw)
     }
 
     /// Test wrapper can write a directory.
@@ -140,7 +140,7 @@ class FileWrapperTests: XCTestCase {
         let dataTxt = testDir.appendingPathComponent("data.txt", isDirectory: false)
         XCTAssertTrue(manager.fileExists(atPath: dataTxt.path, isDirectory: &isDirectory))
         XCTAssertFalse(isDirectory.boolValue)
-        let data = try String(contentsOf: dataTxt)
+        let data = try String(contentsOf: dataTxt, encoding: .utf8)
         XCTAssertEqual(data, raw)
     }
 
@@ -161,7 +161,7 @@ class FileWrapperTests: XCTestCase {
         let newWrapper = FileWrapper(regularFileWithContents: newData)
         newWrapper.preferredFilename = fileName
         try newWrapper.write(to: path, originalContentsURL: nil)
-        guard let readContents = try? String(contentsOf: path) else {
+        guard let readContents = try? String(contentsOf: path, encoding: .utf8) else {
             XCTFail("Failed to read file.")
             return
         }
@@ -204,10 +204,12 @@ class FileWrapperTests: XCTestCase {
 
     /// Test URL init reads folder contents correctly.
     func testURLInitDirectory() throws {
-        XCTAssertTrue(manager.createFile(
-            atPath: buildPath.appendingPathComponent("foo", isDirectory: false).path,
-            contents: "bar".data(using: .utf8)
-        ))
+        XCTAssertTrue(
+            manager.createFile(
+                atPath: buildPath.appendingPathComponent("foo", isDirectory: false).path,
+                contents: "bar".data(using: .utf8)
+            )
+        )
         let wrapper = try FileWrapper(url: buildPath)
         XCTAssertTrue(wrapper.isDirectory)
         XCTAssertFalse(wrapper.isRegularFile)
@@ -241,7 +243,9 @@ class FileWrapperTests: XCTestCase {
             XCTAssertEqual(
                 $0 as NSError,
                 CocoaError.error(
-                    .fileReadUnsupportedScheme, userInfo: ["NSURL": buildURL.path], url: buildURL
+                    .fileReadUnsupportedScheme,
+                    userInfo: ["NSURL": buildURL.path],
+                    url: buildURL
                 ) as NSError
             )
         }
@@ -322,7 +326,8 @@ class FileWrapperTests: XCTestCase {
         )
         XCTAssertEqual(
             try String(
-                contentsOf: self.buildPath.appendingPathComponent(key, isDirectory: false), encoding: .utf8
+                contentsOf: self.buildPath.appendingPathComponent(key, isDirectory: false),
+                encoding: .utf8
             ),
             "Duplicate"
         )

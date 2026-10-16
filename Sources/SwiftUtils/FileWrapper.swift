@@ -81,7 +81,7 @@ import Foundation
 open class FileWrapper {
 
     /// Writing options that can be set by the ``write(to:options:originalContentsURL:)`` method.
-    public struct WritingOptions: OptionSet {
+    public struct WritingOptions: OptionSet, Sendable {
 
         /// Whether writing is done atomically.
         public static let atomic: FileWrapper.WritingOptions = FileWrapper.WritingOptions(rawValue: 1)
@@ -92,7 +92,7 @@ open class FileWrapper {
         )
 
         /// The `rawValue`.
-        public var rawValue: UInt
+        public let rawValue: UInt
 
         /// Initialise from the `rawValue`.
         public init(rawValue: UInt) {
@@ -111,7 +111,7 @@ open class FileWrapper {
     /// will never fail. However, note that reading with both options together is expensive in terms of both
     /// I/O and memory for large files, or directories containing large files, or even directories containing
     /// many small files.
-    public struct ReadingOptions: OptionSet {
+    public struct ReadingOptions: OptionSet, Sendable {
 
         /// The option to read files immediately after creating a file wrapper.
         public static let immediate: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 1)
@@ -120,7 +120,7 @@ open class FileWrapper {
         public static let withoutMapping: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 2)
 
         /// The `rawValue`.
-        public var rawValue: UInt
+        public let rawValue: UInt
 
         /// Initialise from `rawValue`.
         public init(rawValue: UInt) {
