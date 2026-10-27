@@ -96,11 +96,6 @@ final class FileWrapperTests {
         }
     }
 
-    /// Remove build folder after every test.
-    deinit {
-        _ = try? manager.removeItem(at: buildPath)
-    }
-
     /// Test wrapper can write a single file.
     @Test
     func testWriteFileWrapper() throws {
@@ -152,9 +147,8 @@ final class FileWrapperTests {
     @Test
     func testOverwriteFile() throws {
         let newContents = "New Hello World!"
-        guard
-            let contents = "Hello World!".data(using: .utf8), let newData = newContents.data(using: .utf8)
-        else {
+        let contents = Data("Hello World!".utf8)
+        guard let newData = newContents.data(using: .utf8) else {
             Issue.record("Failed to create data.")
             return
         }
@@ -176,10 +170,7 @@ final class FileWrapperTests {
     /// Test FileWrapper successfully overwrite a directory with new data.
     func testOverwriteDirectory() throws {
         let contents = "Subdir Hello World!"
-        guard let contentsData = contents.data(using: .utf8) else {
-            Issue.record("Failed to convert contents to data.")
-            return
-        }
+        let contentsData = Data(contents.utf8)
         let testDir = "testDir"
         let dataTxt = "data.txt"
         let wrapper = FileWrapper(directoryWithFileWrappers: [:])
@@ -194,10 +185,7 @@ final class FileWrapperTests {
         let originalContents = try String(contentsOf: dataPath, encoding: .utf8)
         #expect(originalContents == contents)
         let newContents = "Subdir Hello World2!"
-        guard let newContentsData = newContents.data(using: .utf8) else {
-            Issue.record("Failed to convert new contents into data.")
-            return
-        }
+        let newContentsData = Data(newContents.utf8)
         let wrapperDir = FileWrapper(directoryWithFileWrappers: [:])
         wrapperDir.preferredFilename = testDir
         let dataWrapper = FileWrapper(regularFileWithContents: newContentsData)
@@ -215,7 +203,7 @@ final class FileWrapperTests {
         #expect(
             manager.createFile(
                 atPath: buildPath.appendingPathComponent("foo", isDirectory: false).path,
-                contents: "bar".data(using: .utf8)
+                contents: Data("bar".utf8)
             )
         )
         let wrapper = try FileWrapper(url: buildPath)
@@ -223,10 +211,11 @@ final class FileWrapperTests {
         #expect(!wrapper.isRegularFile)
         #expect(wrapper.preferredFilename == "build")
         #expect(wrapper.filename == "build")
-        guard let fileContents = wrapper.fileWrappers, let data = "bar".data(using: .utf8) else {
+        guard let fileContents = wrapper.fileWrappers else {
             Issue.record("Failed to get file contents!")
             return
         }
+        let data = Data("bar".utf8)
         #expect(fileContents.count == 1)
         guard let file = fileContents["foo"] else {
             Issue.record("Failed to get file!")
@@ -242,7 +231,7 @@ final class FileWrapperTests {
     @Test
     func testURLInitDirectoryNoFileURL() throws {
         let fooPath = buildPath.path + "/foo"
-        #expect(manager.createFile(atPath: fooPath, contents: "bar".data(using: .utf8)))
+        #expect(manager.createFile(atPath: fooPath, contents: Data("bar".utf8)))
         guard let buildURL = URL(string: buildPath.path) else {
             Issue.record("Failed to create URL.")
             return
@@ -261,10 +250,7 @@ final class FileWrapperTests {
     /// Test the `fileName` setter.
     @Test
     func testFileNameSetter() {
-        guard let data = "Test".data(using: .utf8) else {
-            Issue.record("Failed to create data.")
-            return
-        }
+        let data = Data("Test".utf8)
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = "File1"
         #expect(wrapper.filename == nil)
@@ -277,13 +263,10 @@ final class FileWrapperTests {
     /// Test the add file wrapper handles regular files.
     @Test
     func testAddFileWrapperFile() throws {
-        guard let data = "Test".data(using: .utf8) else {
-            Issue.record("Failed to create data.")
-            return
-        }
+        let data = Data("Test".utf8)
         let wrapper = FileWrapper(regularFileWithContents: data)
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        #expect(wrapper.addFileWrapper(wrapper2) == "")
+        #expect(wrapper.addFileWrapper(wrapper2).isEmpty)
     }
     #endif
 
@@ -291,24 +274,19 @@ final class FileWrapperTests {
     /// Test the add file wrapper handles files without names.
     @Test
     func testAddFileWrapperNoPreferred() throws {
-        guard let data = "Test".data(using: .utf8) else {
-            Issue.record("Failed to create data.")
-            return
-        }
+        let data = Data("Test".utf8)
         let wrapper = FileWrapper(regularFileWithContents: data)
         wrapper.preferredFilename = nil
         let wrapper2 = FileWrapper(directoryWithFileWrappers: [:])
-        #expect(wrapper2.addFileWrapper(wrapper) == "")
+        #expect(wrapper2.addFileWrapper(wrapper).isEmpty)
     }
     #endif
 
     /// Test that the file is renamed when it overwrites a file with the same name.
     @Test
     func testAddFileWrapperPreferredTaken() throws {
-        guard let data = "Test".data(using: .utf8), let data2 = "Duplicate".data(using: .utf8) else {
-            Issue.record("Failed to create data.")
-            return
-        }
+        let data = Data("Test".utf8)
+        let data2 = Data("Duplicate".utf8)
         let wrapper = FileWrapper(regularFileWithContents: data)
         #expect(wrapper.regularFileContents != nil)
         wrapper.preferredFilename = "data.txt"
@@ -383,6 +361,11 @@ final class FileWrapperTests {
         #expect(
             (try self.manager.contentsOfDirectory(at: emptyPath, includingPropertiesForKeys: nil)).isEmpty
         )
+    }
+
+    /// Remove build folder after every test.
+    deinit {
+        _ = try? manager.removeItem(at: buildPath)
     }
 
 }

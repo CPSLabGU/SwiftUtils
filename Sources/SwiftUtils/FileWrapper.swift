@@ -84,10 +84,10 @@ open class FileWrapper {
     public struct WritingOptions: OptionSet, Sendable {
 
         /// Whether writing is done atomically.
-        public static let atomic: FileWrapper.WritingOptions = FileWrapper.WritingOptions(rawValue: 1)
+        public static let atomic = FileWrapper.WritingOptions(rawValue: 1)
 
         /// Whether descendant file wrappers’ ``filename`` properties are set if the writing succeeds.
-        public static let withNameUpdating: FileWrapper.WritingOptions = FileWrapper.WritingOptions(
+        public static let withNameUpdating = FileWrapper.WritingOptions(
             rawValue: 2
         )
 
@@ -114,10 +114,10 @@ open class FileWrapper {
     public struct ReadingOptions: OptionSet, Sendable {
 
         /// The option to read files immediately after creating a file wrapper.
-        public static let immediate: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 1)
+        public static let immediate = FileWrapper.ReadingOptions(rawValue: 1)
 
         /// Whether file mapping for regular file wrappers is disallowed.
-        public static let withoutMapping: FileWrapper.ReadingOptions = FileWrapper.ReadingOptions(rawValue: 2)
+        public static let withoutMapping = FileWrapper.ReadingOptions(rawValue: 2)
 
         /// The `rawValue`.
         public let rawValue: UInt
